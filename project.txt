@@ -9,10 +9,9 @@ python-project-83
 ├── build.sh
 ├── page_analyzer
 │   ├── __init__.py
-│   ├── __pycache__
-│   │   ├── __init__.cpython-313.pyc
-│   │   └── app.cpython-313.pyc
-│   └── app.py
+│   ├── app.py
+│   └── templates
+│       └── index.html
 ├── project.txt
 ├── pyproject.toml
 └── uv.lock
@@ -42,6 +41,10 @@ lint:
 ```md
 ### Hexlet tests and linter status:
 [![Actions Status](https://github.com/maltoleb/python-project-83/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/maltoleb/python-project-83/actions)
+
+### Page Analyzer
+
+https://python-project-83-xzst.onrender.com
 ```
 
 `build.sh`:
@@ -65,15 +68,39 @@ __all__ = ["app"]
 `page_analyzer/app.py`:
 
 ```py
-from flask import Flask
+import os
+from flask import Flask, render_template
+from dotenv import load_dotenv
 
+load_dotenv()
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
 
 @app.route("/")
 def index():
-    return "Hello, World!"
+    return render_template('index.html')
+```
+
+`page_analyzer/templates/index.html`:
+
+```html
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Page Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="container">
+        <h1>Hello, world!</h1>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+  </body>
+</html>
 ```
 
 `pyproject.toml`:
@@ -87,6 +114,7 @@ requires-python = ">=3.10"
 dependencies = [
     "flask>=3.1.3",
     "gunicorn>=25.1.0",
+    "python-dotenv>=1.2.2",
 ]
 
 [dependency-groups]
@@ -169,6 +197,7 @@ source = { virtual = "." }
 dependencies = [
     { name = "flask" },
     { name = "gunicorn" },
+    { name = "python-dotenv" },
 ]
 
 [package.dev-dependencies]
@@ -180,6 +209,7 @@ dev = [
 requires-dist = [
     { name = "flask", specifier = ">=3.1.3" },
     { name = "gunicorn", specifier = ">=25.1.0" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
 ]
 
 [package.metadata.requires-dev]
@@ -298,6 +328,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/65/ee/299d360cdc32edc7d2cf530f3accf79c4fca01e96ffc950d8a52213bd8e4/packaging-26.0.tar.gz", hash = "sha256:00243ae351a257117b6a241061796684b084ed1c516a08c48a3f7e147a9d80b4", size = 143416, upload-time = "2026-01-21T20:50:39.064Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/b9/c538f279a4e237a006a2c98387d081e9eb060d203d8ed34467cc0f0b9b53/packaging-26.0-py3-none-any.whl", hash = "sha256:b36f1fef9334a5588b4166f8bcd26a14e521f2b55e6b9de3aaa80d3ff7a37529", size = 74366, upload-time = "2026-01-21T20:50:37.788Z" },
+]
+
+[[package]]
+name = "python-dotenv"
+version = "1.2.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/82/ed/0301aeeac3e5353ef3d94b6ec08bbcabd04a72018415dcb29e588514bba8/python_dotenv-1.2.2.tar.gz", hash = "sha256:2c371a91fbd7ba082c2c1dc1f8bf89ca22564a087c2c287cd9b662adde799cf3", size = 50135, upload-time = "2026-03-01T16:00:26.196Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/0b/d7/1959b9648791274998a9c3526f6d0ec8fd2233e4d4acce81bbae76b44b2a/python_dotenv-1.2.2-py3-none-any.whl", hash = "sha256:1d8214789a24de455a8b8bd8ae6fe3c6b69a5e3d64aa8a8e5d68e694bbcb285a", size = 22101, upload-time = "2026-03-01T16:00:25.09Z" },
 ]
 
 [[package]]
