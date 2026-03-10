@@ -13,7 +13,7 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-
+#routes:
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -25,11 +25,10 @@ def create_url():
         flash("URL обязателен")
         return render_template("index.html"), 422
 
-    if not validators.url(url):
+    normalized_url = normalize_url(url)
+    if not validators.url(normalized_url):
         flash("Некорректный URL")
         return render_template("index.html"), 422
-
-    normalized_url = normalize_url(url)
 
     existing = find_url(normalized_url)
 
@@ -44,10 +43,7 @@ def create_url():
 
     return redirect(url_for("urls_show", id=url_id))
 
-
-def get_connection():
-    return psycopg.connect(DATABASE_URL)
-
+#DB functions:
 def get_urls():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
@@ -65,7 +61,7 @@ def add_url(name):
             )
 
 def find_url(name):
-    with psycopg(DATABASE_URL) as conn:
+    with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute(
                 "SELECT id FROM urls WHERE name = %s",
@@ -73,8 +69,10 @@ def find_url(name):
             )
             return cur.fetchone()
 
-def normalize_url():
+#helpers:
+def normalize_url(url):
     parsed = urlparse(url)
-    scheme = parsed.scheme
-    netloc = parsed.netloc
-    return f"{scheme}://{netloc}"
+    if not parsed.scheme:
+        url = f"https://{url}"
+        parsed = urlparse(url)
+    return f"{parsed.scheme}://{parsed.netloc}"
