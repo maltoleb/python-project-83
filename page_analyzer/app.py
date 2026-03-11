@@ -18,7 +18,7 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 def index():
     return render_template('index.html')
 
-@app.post('/urls')
+@app.post("/urls")
 def create_url():
     url = request.form.get('url')
     if not url:
@@ -43,13 +43,32 @@ def create_url():
 
     return redirect(url_for("urls_show", id=url_id))
 
+@app.get("/urls")
+def urls_index():
+    urls = get_urls()
+    return render_template('urls.html', urls=urls)
+
+@app.get("/urls/<int:id>")
+def urls_show(id):
+    url = get_url(id)
+    return render_template("url.html", url=url)
+
+
 #DB functions:
 def get_urls():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute("SELECT * FROM urls ORDER BY id DESC")
-            rows = cur.fetchall()
-            return rows
+            return cur.fetchall()
+        
+def get_url(id):
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+            "SELECT id, name, created_at FROM urls WHERE id=%s",
+            (id,)
+            )
+            return cur.fetchone()
 
 def add_url(name):
     created_at = datetime.now()
@@ -68,6 +87,7 @@ def find_url(name):
                 (name,)
             )
             return cur.fetchone()
+
 
 #helpers:
 def normalize_url(url):
