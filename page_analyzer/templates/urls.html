@@ -1,4 +1,5 @@
 <h1>Сайты</h1>
+
 <table data-test="urls">
     <thead>
         <tr>
@@ -7,17 +8,19 @@
             <th>Дата создания</th>
         </tr>
     </thead>
+
     <tbody>
-        {% for ulr in urls %}
+        {% for url in urls %}
         <tr>
             <td>{{ url[0] }}</td>
             <td>
                 <a href="{{ url_for('urls_show', id=url[0]) }}">
-                {{ url[1] }}
+                    {{ url[1] }}
                 </a>
             </td>
             <td>{{ url[2] }}</td>
         </tr>
         {% endfor %}
     </tbody>
+
 </table>
