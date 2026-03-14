@@ -51,7 +51,17 @@ def urls_index():
 @app.get("/urls/<int:id>")
 def urls_show(id):
     url = get_url(id)
-    return render_template("url.html", url=url)
+    checks = get_checks(id)
+    return render_template(
+        "url.html", 
+        url=url, checks=checks
+        )
+
+@app.post("/urls/<int:id>/checks")
+def create_check(id):
+    add_check(id)
+    flash("Страница успешно проверена")
+    return redirect(url_for("urls_show", id=id))
 
 
 #DB functions:
@@ -88,6 +98,25 @@ def find_url(name):
             )
             return cur.fetchone()
 
+def add_check(url_id):
+    created_at = datetime.now()
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                '''INSERT INTO url_checks (url_id, created_at)
+                VALUES (%s, %s)''', (url_id, created_at)
+            )
+
+def get_checks(url_id):
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                '''SELECT id, status_code, h1, title, description, created_at
+                FROM url_checks
+                WHERE url_id = %s
+                ORDER by id DESC''', (url_id,)
+            )
+            return cur.fetchall()
 
 #helpers:
 def normalize_url(url):
