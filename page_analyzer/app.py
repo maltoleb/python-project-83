@@ -68,7 +68,16 @@ def create_check(id):
 def get_urls():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM urls ORDER BY id DESC")
+            cur.execute('''SELECT
+            urls.id,
+            urls.name,
+            urls.created_at,
+            MAX(url_checks.created_at) AS last_check_date
+            FROM urls
+            LEFT JOIN url_checks ON urls.id = url_checks.url_id
+            GROUP BY urls.id, urls.name, urls.created_at
+            ORDER BY urls.id DESC
+            ''')
             return cur.fetchall()
         
 def get_url(id):

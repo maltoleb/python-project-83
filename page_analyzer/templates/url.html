@@ -16,3 +16,45 @@
     <td>{{ url[2] }}</td>
   </tr>
 </table>
+
+<form method="post" action="/urls/{{ url[0] }}/checks">
+  <input type="submit" value="Запустить проверку">
+</form>
+
+<h2>Проверки</h2>
+
+<table data-test="checks">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Код ответа</th>
+      <th>h1</th>
+      <th>title</th>
+      <th>description</th>
+      <th>Дата создания</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for check in checks %}
+    <tr>
+      <td>{{ check[0] }}</td>
+      <td>{{ check[1] }}</td>
+      <td>{{ check[2] }}</td>
+      <td>{{ check[3] }}</td>
+      <td>{{ check[4] }}</td>
+      <td>{{ check[5] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+  <!-- flash сообщения -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-info" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
