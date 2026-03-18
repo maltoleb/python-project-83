@@ -33,7 +33,7 @@ def create_url():
 
     normalized_url = normalize_url(url)
     if not validators.url(normalized_url):
-        flash("Некорректный URL")
+        flash("Некорректный URL", "danger")
         return render_template("index.html"), 422
 
     existing = find_url(normalized_url)
@@ -66,7 +66,7 @@ def urls_show(id):
 @app.post("/urls/<int:id>/checks")
 def create_check(id):
     add_check(id)
-    flash("Страница успешно проверена")
+    flash("Страница успешно проверена", "success")
     return redirect(url_for("urls_show", id=id))
 
 #helpers:
