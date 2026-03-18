@@ -74,7 +74,7 @@ def create_check(id):
         status_code = response.status_code
         add_check(id, status_code)
         flash("Страница успешно проверена", "success")
-    except:
+    except requests.exceptions.RequestException:
         flash("Произошла ошибка при проверке", "danger")
     return redirect(url_for("urls_show", id=id))
 
