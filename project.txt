@@ -11,6 +11,7 @@ python-project-83
 ├── page_analyzer
 │   ├── __init__.py
 │   ├── app.py
+│   ├── db.py
 │   └── templates
 │       ├── index.html
 │       ├── url.html
@@ -69,6 +70,16 @@ CREATE TABLE IF NOT EXISTS urls (
     name VARCHAR(255) NOT NULL UNIQUE,
     created_at TIMESTAMP NOT NULL
 );
+
+CREATE TABLE IF NOT EXISTS url_checks (
+    id BIGSERIAL PRIMARY KEY,
+    url_id INT,
+    status_code INT,
+    h1 TEXT,
+    title TEXT,
+    description TEXT,
+    created_at TIMESTAMP
+);
 ```
 
 `page_analyzer/__init__.py`:
@@ -83,12 +94,18 @@ __all__ = ["app"]
 
 ```py
 import os
-import psycopg
 import validators
 from flask import Flask, render_template, request, flash, url_for, redirect
 from dotenv import load_dotenv
-from datetime import datetime
 from urllib.parse import urlparse
+from .db import (
+    get_urls,
+    get_url,
+    add_url,
+    find_url,
+    add_check,
+    get_checks,
+)
 
 load_dotenv()
 
@@ -111,7 +128,7 @@ def create_url():
 
     normalized_url = normalize_url(url)
     if not validators.url(normalized_url):
-        flash("Некорректный URL")
+        flash("Некорректный URL", "danger")
         return render_template("index.html"), 422
 
     existing = find_url(normalized_url)
@@ -135,14 +152,55 @@ def urls_index():
 @app.get("/urls/<int:id>")
 def urls_show(id):
     url = get_url(id)
-    return render_template("url.html", url=url)
+    checks = get_checks(id)
+    return render_template(
+        "url.html", 
+        url=url, checks=checks
+        )
+
+@app.post("/urls/<int:id>/checks")
+def create_check(id):
+    add_check(id)
+    flash("Страница успешно проверена", "success")
+    return redirect(url_for("urls_show", id=id))
+
+#helpers:
+def normalize_url(url):
+    parsed = urlparse(url)
+    if not parsed.scheme:
+        url = f"https://{url}"
+        parsed = urlparse(url)
+    return f"{parsed.scheme}://{parsed.netloc}"
+
+```
+
+`page_analyzer/db.py`:
+
+```py
+import os
+import psycopg
+from dotenv import load_dotenv
+from datetime import datetime
 
 
-#DB functions:
+load_dotenv()
+
+DATABASE_URL = os.getenv('DATABASE_URL')
+
+
 def get_urls():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
-            cur.execute("SELECT * FROM urls ORDER BY id DESC")
+            cur.execute('''SELECT
+            urls.id,
+            urls.name,
+            urls.created_at,
+            MAX(url_checks.created_at) AS last_check_date
+            FROM urls
+            LEFT JOIN url_checks ON urls.id = url_checks.url_id
+            GROUP BY urls.id, urls.name, urls.created_at
+            ORDER BY urls.id DESC
+            ''')
             return cur.fetchall()
         
 def get_url(id):
@@ -172,15 +230,25 @@ def find_url(name):
             )
             return cur.fetchone()
 
+def add_check(url_id):
+    created_at = datetime.now()
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                '''INSERT INTO url_checks (url_id, created_at)
+                VALUES (%s, %s)''', (url_id, created_at)
+            )
 
-#helpers:
-def normalize_url(url):
-    parsed = urlparse(url)
-    if not parsed.scheme:
-        url = f"https://{url}"
-        parsed = urlparse(url)
-    return f"{parsed.scheme}://{parsed.netloc}"
-
+def get_checks(url_id):
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                '''SELECT id, status_code, h1, title, description, created_at
+                FROM url_checks
+                WHERE url_id = %s
+                ORDER by id DESC''', (url_id,)
+            )
+            return cur.fetchall()
 ```
 
 `page_analyzer/templates/index.html`:
@@ -209,7 +277,7 @@ def normalize_url(url):
   {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
       {% for category, message in messages %}
-        <div class="alert alert-info" role="alert">
+        <div class="alert alert-{{ category }}" role="alert">
           {{ message }}
         </div>
       {% endfor %}
@@ -266,6 +334,48 @@ def normalize_url(url):
     <td>{{ url[2] }}</td>
   </tr>
 </table>
+
+<form method="post" action="/urls/{{ url[0] }}/checks">
+  <input type="submit" value="Запустить проверку">
+</form>
+
+<h2>Проверки</h2>
+
+<table data-test="checks">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Код ответа</th>
+      <th>h1</th>
+      <th>title</th>
+      <th>description</th>
+      <th>Дата создания</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for check in checks %}
+    <tr>
+      <td>{{ check[0] }}</td>
+      <td>{{ check[1] }}</td>
+      <td>{{ check[2] }}</td>
+      <td>{{ check[3] }}</td>
+      <td>{{ check[4] }}</td>
+      <td>{{ check[5] }}</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+  <!-- flash сообщения -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 ```
 
 `page_analyzer/templates/urls.html`:
@@ -279,6 +389,7 @@ def normalize_url(url):
             <th>ID</th>
             <th>Имя</th>
             <th>Дата создания</th>
+            <th>Последняя проверка</th>
         </tr>
     </thead>
 
@@ -292,11 +403,22 @@ def normalize_url(url):
                 </a>
             </td>
             <td>{{ url[2] }}</td>
+            <td>{{ url[3] or '' }}</td>
         </tr>
         {% endfor %}
     </tbody>
-
 </table>
+
+  <!-- flash сообщения -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }}" role="alert">
+          {{ message }}
+        </div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
 ```
 
 `pyproject.toml`:

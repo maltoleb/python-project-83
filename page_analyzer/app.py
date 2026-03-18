@@ -1,5 +1,6 @@
 import os
 import validators
+import requests
 from flask import Flask, render_template, request, flash, url_for, redirect
 from dotenv import load_dotenv
 from urllib.parse import urlparse
@@ -65,8 +66,16 @@ def urls_show(id):
 
 @app.post("/urls/<int:id>/checks")
 def create_check(id):
-    add_check(id)
-    flash("Страница успешно проверена", "success")
+    url = get_url(id)
+    site_name = url[1]
+    try:
+        response = requests.get(site_name, timeout=5)
+        response.raise_for_status()
+        status_code = response.status_code
+        add_check(id, status_code)
+        flash("Страница успешно проверена", "success")
+    except:
+        flash("Произошла ошибка при проверке", "danger")
     return redirect(url_for("urls_show", id=id))
 
 #helpers:
