@@ -1,10 +1,9 @@
 import os
-import psycopg
 import validators
 from flask import Flask, render_template, request, flash, url_for, redirect
 from dotenv import load_dotenv
-from datetime import datetime
 from urllib.parse import urlparse
+from .db import get_urls
 
 load_dotenv()
 
@@ -62,70 +61,6 @@ def create_check(id):
     add_check(id)
     flash("Страница успешно проверена")
     return redirect(url_for("urls_show", id=id))
-
-
-#DB functions:
-def get_urls():
-    with psycopg.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute('''SELECT
-            urls.id,
-            urls.name,
-            urls.created_at,
-            MAX(url_checks.created_at) AS last_check_date
-            FROM urls
-            LEFT JOIN url_checks ON urls.id = url_checks.url_id
-            GROUP BY urls.id, urls.name, urls.created_at
-            ORDER BY urls.id DESC
-            ''')
-            return cur.fetchall()
-        
-def get_url(id):
-    with psycopg.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-            "SELECT id, name, created_at FROM urls WHERE id=%s",
-            (id,)
-            )
-            return cur.fetchone()
-
-def add_url(name):
-    created_at = datetime.now()
-    with psycopg.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO urls (name, created_at) VALUES (%s, %s)",
-                (name, created_at)
-            )
-
-def find_url(name):
-    with psycopg.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                "SELECT id FROM urls WHERE name = %s",
-                (name,)
-            )
-            return cur.fetchone()
-
-def add_check(url_id):
-    created_at = datetime.now()
-    with psycopg.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                '''INSERT INTO url_checks (url_id, created_at)
-                VALUES (%s, %s)''', (url_id, created_at)
-            )
-
-def get_checks(url_id):
-    with psycopg.connect(DATABASE_URL) as conn:
-        with conn.cursor() as cur:
-            cur.execute(
-                '''SELECT id, status_code, h1, title, description, created_at
-                FROM url_checks
-                WHERE url_id = %s
-                ORDER by id DESC''', (url_id,)
-            )
-            return cur.fetchall()
 
 #helpers:
 def normalize_url(url):
