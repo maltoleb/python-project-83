@@ -3,7 +3,14 @@ import validators
 from flask import Flask, render_template, request, flash, url_for, redirect
 from dotenv import load_dotenv
 from urllib.parse import urlparse
-from .db import get_urls
+from .db import (
+    get_urls,
+    get_url,
+    add_url,
+    find_url,
+    add_check,
+    get_checks,
+)
 
 load_dotenv()
 
