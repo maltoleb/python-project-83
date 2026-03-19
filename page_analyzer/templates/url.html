@@ -29,7 +29,7 @@
 
   <tr>
     <th>Дата создания</th>
-    <td>{{ url[2] }}</td>
+    <td>{{ url[2].strftime('%Y-%m-%d %H:%M:%S') }}</td>
   </tr>
 </table>
 
@@ -55,10 +55,10 @@
     <tr>
       <td>{{ check[0] }}</td>
       <td>{{ check[1] }}</td>
-      <td>{{ check[2] }}</td>
-      <td>{{ check[3] }}</td>
-      <td>{{ check[4] }}</td>
-      <td>{{ check[5] }}</td>
+      <td>{{ check[2] or '' }}</td>
+      <td>{{ check[3] or '' }}</td>
+      <td>{{ check[4] or '' }}</td>
+      <td>{{ check[5].strftime('%Y-%m-%d %H:%M:%S') }}</td>
     </tr>
     {% endfor %}
   </tbody>
