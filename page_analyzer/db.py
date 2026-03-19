@@ -13,14 +13,19 @@ def get_urls():
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute('''SELECT
-            urls.id,
-            urls.name,
-            urls.created_at,
-            MAX(url_checks.created_at) AS last_check_date
+                urls.id,
+                urls.name,
+                urls.created_at,
+                checks.created_at AS last_check_date,
+                checks.status_code
             FROM urls
-            LEFT JOIN url_checks ON urls.id = url_checks.url_id
-            GROUP BY urls.id, urls.name, urls.created_at
-            ORDER BY urls.id DESC
+            LEFT JOIN (
+                SELECT DISTINCT ON (url_id) *
+                FROM url_checks
+                ORDER BY url_id, created_at DESC
+            ) AS checks
+            ON urls.id = checks.url_id
+            ORDER BY urls.id DESC;
             ''')
             return cur.fetchall()
         
