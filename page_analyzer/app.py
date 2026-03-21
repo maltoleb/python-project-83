@@ -1,6 +1,7 @@
 import os
 import validators
 import requests
+from bs4 import BeautifulSoup
 from flask import Flask, render_template, request, flash, url_for, redirect
 from dotenv import load_dotenv
 from urllib.parse import urlparse
@@ -72,7 +73,8 @@ def create_check(id):
         response = requests.get(site_name, timeout=5)
         response.raise_for_status()
         status_code = response.status_code
-        add_check(id, status_code)
+        h1 = extract_h1(response.text)
+        add_check(id, status_code, h1)
         flash("Страница успешно проверена", "success")
     except requests.exceptions.RequestException:
         flash("Произошла ошибка при проверке", "danger")
@@ -85,3 +87,10 @@ def normalize_url(url):
         url = f"https://{url}"
         parsed = urlparse(url)
     return f"{parsed.scheme}://{parsed.netloc}"
+
+def extract_h1(html):
+    soup = BeautifulSoup(html, "html.parser")
+    h1 = soup.find("h1")
+    if h1:
+        return h1.get_text(strip=True)
+    return None
