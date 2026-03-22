@@ -39,3 +39,6 @@ htmlcov/
 
 # Render / deployment
 .python-version
+
+#other
+.project.txt
