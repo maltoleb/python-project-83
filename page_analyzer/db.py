@@ -56,15 +56,15 @@ def find_url(name):
             )
             return cur.fetchone()
 
-def add_check(url_id, status_code, h1):
+def add_check(url_id, status_code, h1, title, description):
     created_at = datetime.now()
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
             cur.execute(
                 '''INSERT INTO url_checks 
-                (url_id, status_code, h1, created_at)
-                VALUES (%s, %s, %s, %s)''', 
-                (url_id, status_code, h1, created_at)
+                (url_id, status_code, h1, title, description, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s)''', 
+                (url_id, status_code, h1, title, description, created_at)
             )
 
 def get_checks(url_id):

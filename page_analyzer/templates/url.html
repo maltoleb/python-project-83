@@ -55,9 +55,39 @@
     <tr>
       <td>{{ check[0] }}</td>
       <td>{{ check[1] }}</td>
-      <td>{{ check[2] or '' }}</td>
-      <td>{{ check[3] or '' }}</td>
-      <td>{{ check[4] or '' }}</td>
+      <td>
+        {% if check[2] %}
+          {% if check[2]|length > 200 %}
+            {{ check[2][:200] }}....
+          {% else %}
+            {{ check[2] }}
+          {% endif %}
+        {% else %}
+          {{ '' }}
+        {% endif %}
+      </td>
+      <td>
+        {% if check[3] %}
+          {% if check[3]|length > 200 %}
+            {{ check[3][:200] }}....
+          {% else %}
+            {{ check[3] }}
+          {% endif %}
+        {% else %}
+          {{ '' }}
+        {% endif %}
+      </td>
+      <td>
+        {% if check[4] %}
+          {% if check[4]|length > 200 %}
+            {{ check[4][:200] }}....
+          {% else %}
+            {{ check[4] }}
+          {% endif %}
+        {% else %}
+          {{ '' }}
+        {% endif %}
+      </td>
       <td>{{ check[5].strftime('%Y-%m-%d %H:%M:%S') }}</td>
     </tr>
     {% endfor %}
