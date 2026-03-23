@@ -43,3 +43,7 @@ htmlcov/
 #other
 project.txt
 
+#sonar
+coverage.xml
+.coverage
+htmlcov/
