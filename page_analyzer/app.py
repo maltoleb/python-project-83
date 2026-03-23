@@ -21,10 +21,11 @@ DATABASE_URL = os.getenv('DATABASE_URL')
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 
-#routes:
+
 @app.route("/")
 def index():
     return render_template('index.html')
+
 
 @app.post("/urls")
 def create_url():
@@ -50,10 +51,12 @@ def create_url():
         flash("Страница успешно добавлена", "success")
     return redirect(url_for("urls_show", id=url_id))
 
+
 @app.get("/urls")
 def urls_index():
     urls = get_urls()
     return render_template('urls.html', urls=urls)
+
 
 @app.get("/urls/<int:id>")
 def urls_show(id):
@@ -63,6 +66,7 @@ def urls_show(id):
         "url.html", 
         url=url, checks=checks
         )
+
 
 @app.post("/urls/<int:id>/checks")
 def create_check(id):
@@ -81,13 +85,14 @@ def create_check(id):
         flash("Произошла ошибка при проверке", "danger")
     return redirect(url_for("urls_show", id=id))
 
-#helpers:
+
 def normalize_url(url):
     parsed = urlparse(url)
     if not parsed.scheme:
         url = f"https://{url}"
         parsed = urlparse(url)
     return f"{parsed.scheme}://{parsed.netloc}"
+
 
 def extract_h1(html):
     soup = BeautifulSoup(html, "html.parser")
@@ -96,12 +101,14 @@ def extract_h1(html):
         return h1.get_text(strip=True)
     return None
 
+
 def extract_title(html):
     soup = BeautifulSoup(html, "html.parser")
     title = soup.find("title")
     if title:
         return title.get_text(strip=True)
     return None
+
 
 def extract_description(html):
     soup = BeautifulSoup(html, "html.parser")

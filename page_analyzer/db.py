@@ -29,6 +29,7 @@ def get_urls():
             ''')
             return cur.fetchall()
         
+
 def get_url(id):
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
@@ -37,6 +38,7 @@ def get_url(id):
             (id,)
             )
             return cur.fetchone()
+
 
 def add_url(name):
     created_at = datetime.now()
@@ -47,6 +49,7 @@ def add_url(name):
                 (name, created_at)
             )
 
+
 def find_url(name):
     with psycopg.connect(DATABASE_URL) as conn:
         with conn.cursor() as cur:
@@ -55,6 +58,7 @@ def find_url(name):
                 (name,)
             )
             return cur.fetchone()
+
 
 def add_check(url_id, status_code, h1, title, description):
     created_at = datetime.now()
@@ -66,6 +70,7 @@ def add_check(url_id, status_code, h1, title, description):
                 VALUES (%s, %s, %s, %s, %s, %s)''', 
                 (url_id, status_code, h1, title, description, created_at)
             )
+
 
 def get_checks(url_id):
     with psycopg.connect(DATABASE_URL) as conn:
