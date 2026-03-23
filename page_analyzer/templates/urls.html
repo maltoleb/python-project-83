@@ -19,8 +19,8 @@
             <th>ID</th>
             <th>Имя</th>
             <th>Дата создания</th>
-            <th>Последняя проверка</th>
             <th>Код ответа</th>
+            <th>Последняя проверка</th>    
         </tr>
     </thead>
 
@@ -34,8 +34,8 @@
                 </a>
             </td>
             <td>{{ url[2].strftime('%Y-%m-%d %H:%M:%S') }}</td>
-            <td>{{ url[3].strftime('%Y-%m-%d %H:%M:%S') if url[3] else '' }}</td>
-            <td>{{ url[4] or '' }}</td>
+            <td>{{ url[4] or ''}} </td>
+            <td>{{ url[3].strftime('%Y-%m-%d %H:%M:%S') if url[3] else ''}}</td>
         </tr>
         {% endfor %}
     </tbody>
