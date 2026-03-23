@@ -41,4 +41,5 @@ htmlcov/
 .python-version
 
 #other
-.project.txt
+project.txt
+
