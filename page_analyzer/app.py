@@ -42,13 +42,12 @@ def create_url():
 
     if existing:
         url_id = existing[0]
+        flash("Страница уже существует", "success")
     else:
         add_url(normalized_url)
         existing = find_url(normalized_url)
         url_id = existing[0]
-
-    flash("Страница успешно добавлена", "success")
-
+        flash("Страница успешно добавлена", "success")
     return redirect(url_for("urls_show", id=url_id))
 
 @app.get("/urls")
