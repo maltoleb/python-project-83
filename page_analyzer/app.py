@@ -1,10 +1,8 @@
 import os
 import validators
 import requests
-from bs4 import BeautifulSoup
 from flask import Flask, render_template, request, flash, url_for, redirect
 from dotenv import load_dotenv
-from urllib.parse import urlparse
 from .db import (
     get_urls,
     get_url,
@@ -13,6 +11,12 @@ from .db import (
     add_check,
     get_checks,
 )
+from .parser import (
+    extract_h1,
+    extract_title,
+    extract_description
+)
+from .url_normalizer import normalize_url
 
 load_dotenv()
 
@@ -84,35 +88,3 @@ def create_check(id):
     except requests.exceptions.RequestException:
         flash("Произошла ошибка при проверке", "danger")
     return redirect(url_for("urls_show", id=id))
-
-
-def normalize_url(url):
-    parsed = urlparse(url)
-    if not parsed.scheme:
-        url = f"https://{url}"
-        parsed = urlparse(url)
-    return f"{parsed.scheme}://{parsed.netloc}"
-
-
-def extract_h1(html):
-    soup = BeautifulSoup(html, "html.parser")
-    h1 = soup.find("h1")
-    if h1:
-        return h1.get_text(strip=True)
-    return None
-
-
-def extract_title(html):
-    soup = BeautifulSoup(html, "html.parser")
-    title = soup.find("title")
-    if title:
-        return title.get_text(strip=True)
-    return None
-
-
-def extract_description(html):
-    soup = BeautifulSoup(html, "html.parser")
-    meta = soup.find("meta", attrs={"name": "description"})
-    if meta:
-        return meta.get("content")
-    return None
