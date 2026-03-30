@@ -55,11 +55,11 @@ git clone `git@github.com:maltoleb/python-project-83.git`
 
 cd python-project-83
 
-2. Установите зависимости:
+**2. Установите зависимости:**
 
 make install
 
-3. Создайте файл `.env` и добавьте переменные окружения:
+**3. Создайте файл `.env` и добавьте переменные окружения:**
 
 DATABASE_URL=your_database_url
 
